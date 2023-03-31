@@ -41,7 +41,7 @@ BoolProducer* ConnectAlarmSender(int pin, String name) {
   char config_path[80];
   char sk_path[80];
 
-  auto* alarm_input = new DigitalInputChange(pin, INPUT, CHANGE);
+  auto* alarm_input = new DigitalInputState(pin, INPUT);
 
   snprintf(config_path, sizeof(config_path), "/Alarm %s/SK Path", name.c_str());
   snprintf(sk_path, sizeof(sk_path), "alarm.%s", name.c_str());
