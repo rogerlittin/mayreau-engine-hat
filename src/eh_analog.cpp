@@ -86,13 +86,15 @@ FloatProducer* ConnectTempSender(Adafruit_ADS1115* ads1115, int channel, String 
   char meta_display_name[80];
   char meta_description[80];
 
-  snprintf(config_path, sizeof(config_path), "/Temp %s/Resistance", name.c_str());
   auto sender_resistance =
       new RepeatSensor<float>(ads_read_delay, [ads1115, channel]() {
         int16_t adc_output = ads1115->readADC_SingleEnded(channel);
         float adc_output_volts = ads1115->computeVolts(adc_output);
         return kAnalogInputScale * adc_output_volts / kMeasurementCurrent;
       });
+
+  snprintf (config_path, sizeof(config_path), "/Temp %s/Sender Scale", name.c_str());
+  auto sender_scale = new Linear(1, 0, config_path);
 
   snprintf(config_path, sizeof(config_path), "/Temp %s/Resistance SK Path", name.c_str());
   snprintf(sk_path, sizeof(sk_path), "propulsion.%s.temperature.senderResistance", name.c_str());
@@ -125,8 +127,8 @@ FloatProducer* ConnectTempSender(Adafruit_ADS1115* ads1115, int channel, String 
       sk_path, config_path,
       new SKMetadata("K", meta_display_name, meta_description));
 
-  sender_resistance->connect_to(sender_resistance_sk_output);
-  sender_resistance->connect_to(temperature)->connect_to(temperature_sk_output);
+  sender_resistance->connect_to(sender_scale)->connect_to(sender_resistance_sk_output);
+  sender_resistance->connect_to(sender_scale)->connect_to(temperature)->connect_to(temperature_sk_output);
 
   return temperature;
 }
@@ -139,7 +141,6 @@ FloatProducer* ConnectPressureSender(Adafruit_ADS1115* ads1115, int channel, Str
   char meta_display_name[80];
   char meta_description[80];
 
-  snprintf(config_path, sizeof(config_path), "/Oil Pressure %s/Resistance", name.c_str());
   auto sender_resistance =
       new RepeatSensor<float>(ads_read_delay, [ads1115, channel]() {
         int16_t adc_output = ads1115->readADC_SingleEnded(channel);
@@ -147,7 +148,10 @@ FloatProducer* ConnectPressureSender(Adafruit_ADS1115* ads1115, int channel, Str
         return kAnalogInputScale * adc_output_volts / kMeasurementCurrent;
       });
 
-  snprintf(config_path, sizeof(config_path), "/Oil Pressure %s/Resistance SK Path", name.c_str());
+  snprintf (config_path, sizeof(config_path), "/Oil Pressure %s/Sender Scale", name.c_str());
+  auto sender_scale = new Linear(1, 0, config_path);
+
+snprintf(config_path, sizeof(config_path), "/Oil Pressure %s/Resistance SK Path", name.c_str());
   snprintf(sk_path, sizeof(sk_path), "propulsion.%s.oilPressure.senderResistance", name.c_str());
   snprintf(meta_display_name, sizeof(meta_display_name), "%s Oil Pressure Resistance", name.c_str());
   snprintf(meta_description, sizeof(meta_description), "Measured %s oil pressure sender resistance", name.c_str());
@@ -177,8 +181,8 @@ FloatProducer* ConnectPressureSender(Adafruit_ADS1115* ads1115, int channel, Str
       sk_path, config_path,
       new SKMetadata("Pa", meta_display_name, meta_description));
 
-  sender_resistance->connect_to(sender_resistance_sk_output);
-  sender_resistance->connect_to(pressure)->connect_to(pressure_sk_output);
+  sender_resistance->connect_to(sender_scale)->connect_to(sender_resistance_sk_output);
+  sender_resistance->connect_to(sender_scale)->connect_to(pressure)->connect_to(pressure_sk_output);
 
   return pressure;
 }
