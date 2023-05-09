@@ -17,7 +17,7 @@ FloatProducer* ConnectTachoSender(int pin, String name) {
   char sk_path[80];
 
   snprintf(config_path, sizeof(config_path), "", name.c_str());
-  auto tacho_input = new DigitalInputCounter(pin, INPUT, RISING, 500, config_path);
+  auto tacho_input = new DigitalInputCounter(pin, INPUT, RISING, 100, config_path);
 
   snprintf(config_path, sizeof(config_path), "/Tacho %s/Revolution Multiplier", name.c_str());
   auto tacho_frequency = new Frequency(kDefaultFrequencyScale, config_path);

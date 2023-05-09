@@ -167,9 +167,9 @@ void setup() {
   // and have specific web UI configuration paths
 
   auto engine_oil_temperature =
-      new OneWireTemperature(dts, 1000, "/mainEngineOilTemp/oneWire");
+      new OneWireTemperature(dts, 1000, "/Engine/OilTemp/oneWire");
   auto main_engine_exhaust_temperature =
-      new OneWireTemperature(dts, 1000, "/mainEngineWetExhaustTemp/oneWire");
+      new OneWireTemperature(dts, 1000, "/Engine/WetExhaustTemp/oneWire");
 
   // define metadata for sensors
   auto main_engine_oil_temperature_metadata =
@@ -190,13 +190,13 @@ void setup() {
 
   // connect the sensors to Signal K output paths
   engine_oil_temperature->connect_to(new SKOutput<float>(
-      "propulsion.main.oilTemperature", "/mainEngineOilTemp/skPath",
+      "propulsion.main.oilTemperature", "/Engine/OilTemp/skPath",
       main_engine_oil_temperature_metadata));
 
   // propulsion.*.wetExhaustTemperature is a non-standard path
   main_engine_exhaust_temperature->connect_to(
       new SKOutput<float>("propulsion.main.wetExhaustTemperature",
-                          "/mainEngineWetExhaustTemp/skPath",
+                          "/Engine/WetExhaustTemp/skPath",
                           main_engine_exhaust_temperature_metadata));
 
   // initialize the I2C bus
@@ -221,9 +221,10 @@ void setup() {
   sensesp_app = (&builder)
                     // Set a custom hostname for the app.
                     ->set_hostname("engine-hat")
+                    ->enable_ota("xxxxxxx")
                     // Optionally, hard-code the WiFi and Signal K server
                     // settings. This is normally not needed.
-                    //->set_wifi("My WiFi SSID", "my_wifi_password")
+                    // ->set_wifi("My WiFi SSID", "my_wifi_password")
                     // ->set_sk_server("192.168.10.3", 80)
                     ->get_app();
 
@@ -283,10 +284,13 @@ void setup() {
   // No need to parse the messages at every single loop iteration; 1 ms will do
   app.onRepeat(1, []() { 
     nmea2000->ParseMessages(); 
+  });
+
+  app.onRepeat(100, []() {
     SendEngineParamsRapid();
   });
 
-  app.onRepeat(1000, []() {
+  app.onRepeat(500, []() {
     SendEngineDynamicParams();
     SendExhaustTemp();
     SendFuelLevels();
@@ -295,7 +299,7 @@ void setup() {
 
   engine_oil_pressure->connect_to(
       new LambdaConsumer<float>([](float pressure) {
-        oil_temperature = pressure;
+        oil_pressure = pressure;
       }));
 
   engine_oil_temperature->connect_to(
@@ -315,7 +319,7 @@ void setup() {
         exhaust_temperature = temperature;
       }));
 
-  auto exhaust_temp_threshold = new FloatThreshold(273.15, 323.15, false, "/Exhaust Temp Threshold");
+  auto exhaust_temp_threshold = new FloatThreshold(273.15, 323.15, false, "/Engine/WetExhaustTemp/Threshold");
 
   main_engine_exhaust_temperature->connect_to(exhaust_temp_threshold)->connect_to(
       new LambdaConsumer<bool>([](bool state) {
@@ -350,7 +354,7 @@ void setup() {
 
   engine_oil_pressure_alarm->connect_to(
     new LambdaConsumer<bool>([](bool state) {
-      if (state)
+      if (state && engine_rpm > 50.0)
         status |= 1 << 2;
       else
         status &= ~(1 << 2);
