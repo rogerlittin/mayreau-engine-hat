@@ -114,9 +114,17 @@ FloatProducer* ConnectTempSender(Adafruit_ADS1115* ads1115, int channel, String 
     // If there's no prior configuration, provide a default curve
     // + 273.15 om van C naar F voor signalk te komen.
     temperature->clear_samples();
-    temperature->add_sample(CurveInterpolator::Sample(281, 273.15 + 40));
-    temperature->add_sample(CurveInterpolator::Sample(68, 273.15 + 80));
+    temperature->add_sample(CurveInterpolator::Sample(1000, 273.15 + 40));
+    temperature->add_sample(CurveInterpolator::Sample(295, 273.15 + 40));
+    temperature->add_sample(CurveInterpolator::Sample(200, 273.15 + 50));
+    temperature->add_sample(CurveInterpolator::Sample(137, 273.15 + 60));
+    temperature->add_sample(CurveInterpolator::Sample(97, 273.15 + 70));
+    temperature->add_sample(CurveInterpolator::Sample(70, 273.15 + 80));
+    temperature->add_sample(CurveInterpolator::Sample(51, 273.15 + 90));
+    temperature->add_sample(CurveInterpolator::Sample(37, 273.15 + 100));
+    temperature->add_sample(CurveInterpolator::Sample(30, 273.15 + 110));
     temperature->add_sample(CurveInterpolator::Sample(22, 273.15 + 120));
+    temperature->add_sample(CurveInterpolator::Sample(0, 273.15 + 120));
   }
 
   snprintf(config_path, sizeof(config_path), "/Temp %s/Current Value SK Path", name.c_str());
@@ -168,9 +176,11 @@ snprintf(config_path, sizeof(config_path), "/Oil Pressure %s/Resistance SK Path"
   if (pressure->get_samples().empty()) {
     // If there's no prior configuration, provide a default curve
     pressure->clear_samples();
+    pressure->add_sample(CurveInterpolator::Sample(0, 0));
     pressure->add_sample(CurveInterpolator::Sample(10, 0));
-    pressure->add_sample(CurveInterpolator::Sample(90, 50000));
-    pressure->add_sample(CurveInterpolator::Sample(180, 1000000));
+    pressure->add_sample(CurveInterpolator::Sample(92, 500000));
+    pressure->add_sample(CurveInterpolator::Sample(184, 1000000));
+    pressure->add_sample(CurveInterpolator::Sample(1000, 1000000));
 }
 
   snprintf(config_path, sizeof(config_path), "/Oil Pressure %s/Current SK Path", name.c_str());

@@ -221,7 +221,7 @@ void setup() {
   sensesp_app = (&builder)
                     // Set a custom hostname for the app.
                     ->set_hostname("engine-hat")
-                    ->enable_ota("xxxxxxx")
+                    ->enable_ota("[My-Password]")
                     // Optionally, hard-code the WiFi and Signal K server
                     // settings. This is normally not needed.
                     // ->set_wifi("My WiFi SSID", "my_wifi_password")
@@ -290,7 +290,7 @@ void setup() {
     SendEngineParamsRapid();
   });
 
-  app.onRepeat(500, []() {
+  app.onRepeat(1000, []() {
     SendEngineDynamicParams();
     SendExhaustTemp();
     SendFuelLevels();
