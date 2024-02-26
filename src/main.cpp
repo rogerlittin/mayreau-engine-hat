@@ -8,6 +8,7 @@
 // Remove the parts that are not relevant to you, and add your own code
 // for external hardware libraries.
 
+#include <esp_task_wdt.h>
 #include <Adafruit_ADS1X15.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -27,6 +28,9 @@
 #include "sensesp/transforms/threshold.h"
 
 using namespace sensesp;
+
+// 5 second WDT
+#define WDT_TIMEOUT 5
 
 // 1-Wire data pin on SH-ESP32
 #define ONEWIRE_PIN 4
@@ -160,6 +164,15 @@ void setup() {
 #ifndef SERIAL_DEBUG_DISABLED
   SetupSerialDebug(115200);
 #endif
+
+  debugI("Configuring WDT with timeout - %d secs", WDT_TIMEOUT);
+  esp_task_wdt_init(WDT_TIMEOUT, true); // enable panic so ESP32 restarts.
+  esp_task_wdt_add(NULL); // add current thread to WDT watch.
+
+  app.onRepeat(2000, []() {
+    debugI("Resetting WDT");
+    esp_task_wdt_reset();
+  });
 
   DallasTemperatureSensors* dts = new DallasTemperatureSensors(ONEWIRE_PIN);
 
