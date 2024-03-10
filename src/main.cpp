@@ -53,7 +53,7 @@ const int kDigitalInputPin3 = GPIO_NUM_14;
 const int kDigitalInputPin4 = GPIO_NUM_12;
 
 const double fuel_capacity = 70.0;
-const double black_capacity = 42.0;
+//const double black_capacity = 42.0;
 
 // Test output pin configuration
 #define ENABLE_TEST_OUTPUT_PIN
@@ -107,7 +107,7 @@ double coolant_temperature = N2kDoubleNA;
 double exhaust_temperature = N2kDoubleNA;
 double engine_rpm = N2kDoubleNA;
 double fuel_level = N2kDoubleNA;
-double black_level = N2kDoubleNA;
+//double black_level = N2kDoubleNA;
 uint16_t status = 0;
 
 void SendEngineDynamicParams() {
@@ -153,11 +153,11 @@ void SendFuelLevels() {
   nmea2000->SendMsg(N2kMsg);
 }
 
-void SendBlackWaterLevels() {
-  tN2kMsg N2kMsg;
-  SetN2kFluidLevel(N2kMsg, 0, N2kft_BlackWater, black_level, black_capacity);
-  nmea2000->SendMsg(N2kMsg);
-}
+//void SendBlackWaterLevels() {
+//  tN2kMsg N2kMsg;
+//  SetN2kFluidLevel(N2kMsg, 0, N2kft_BlackWater, black_level, black_capacity);
+//  nmea2000->SendMsg(N2kMsg);
+//}
 
 // The setup function performs one-time application initialization.
 void setup() {
@@ -245,7 +245,7 @@ void setup() {
   auto engine_oil_pressure = ConnectPressureSender(ads1115, 0, "engine");
   auto engine_temperature = ConnectTempSender(ads1115, 1, "engine");
   auto fuel_tank_level = ConnectTankSender(ads1115, 2, "fuel");
-  auto black_water_level = ConnectTankSender(ads1115, 3, "blackwater");
+  //auto black_water_level = ConnectTankSender(ads1115, 3, "blackwater");
 
   // Connect the tacho senders
   auto tacho_frequency = ConnectTachoSender(kDigitalInputPin2, "engine");
@@ -307,7 +307,7 @@ void setup() {
     SendEngineDynamicParams();
     SendExhaustTemp();
     SendFuelLevels();
-    SendBlackWaterLevels();
+    //SendBlackWaterLevels();
   });
 
   engine_oil_pressure->connect_to(
@@ -344,13 +344,13 @@ void setup() {
 
   fuel_tank_level->connect_to(
       new LambdaConsumer<float>([](float level) {
-        fuel_level = level;
+        fuel_level = 100 * level;
       }));
 
-  black_water_level->connect_to(
-      new LambdaConsumer<float>([](float level) {
-        black_level = level;
-      }));
+  //black_water_level->connect_to(
+  //    new LambdaConsumer<float>([](float level) {
+  //      black_level = level;
+  //    }));
 
   tacho_frequency->connect_to(
       new LambdaConsumer<float>([](float value) {
